@@ -23,6 +23,7 @@ function App() {
   const canvasRef = useRef();
   const sceneRef = useRef();
   const [currentAssetIndex, setCurrentAssetIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -34,16 +35,20 @@ function App() {
   }, [currentAssetIndex]);
 
   const handleModelSwitch = async () => {
+    setLoading(true)
     if (sceneRef.current) {
       setCurrentAssetIndex((prevIndex) => (prevIndex + 1) % assetObject.length);
       await sceneRef.current.switchModel(currentAssetIndex);
+      setLoading(false)
     }
   };
 
   const handleModelSwitchBackWard = async () => {
+    setLoading(true)
     if (sceneRef.current) {
       setCurrentAssetIndex((prevIndex) => (prevIndex - 1) % assetObject.length);
       await sceneRef.current.switchModel(currentAssetIndex);
+      setLoading(false);
     }
   };
 
@@ -62,6 +67,10 @@ function App() {
         <MdKeyboardArrowLeft onClick={handleModelSwitchBackWard} />
         <MdKeyboardArrowRight onClick={handleModelSwitch} />
       </div>
+      {loading &&
+        <div className='model'>
+          Wait, Awesomeness is loading...
+        </div>}
     </>
   );
 }
