@@ -24,6 +24,8 @@ function App() {
   const sceneRef = useRef();
   const [currentAssetIndex, setCurrentAssetIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const debounceTimeout = useRef(null); // For tracking debounce timeout
+  const debounceDelay = 2000; // 2 seconds delay after scrolling
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -32,6 +34,38 @@ function App() {
 
       return cleanup; // Clean up resources on component unmount or re-render
     }
+  }, [currentAssetIndex]);
+
+  useEffect(() => {
+    const handleScroll = (event) => {
+      // Clear any existing timeout to prevent immediate model change
+      clearTimeout(debounceTimeout.current);
+
+      // Set new timeout to wait for user inactivity after scrolling
+      debounceTimeout.current = setTimeout(async () => {
+        setLoading(true);
+
+        if (sceneRef.current) {
+          if (event.deltaY > 0) {
+            // Scroll down
+            setCurrentAssetIndex((prevIndex) => (prevIndex + 1) % assetObject.length);
+          } else {
+            // Scroll up
+            setCurrentAssetIndex((prevIndex) => (prevIndex - 1 + assetObject.length) % assetObject.length);
+          }
+
+          await sceneRef.current.switchModel(currentAssetIndex);
+          setLoading(false);
+        }
+      }, debounceDelay); // Delay in ms (2 seconds in this case)
+    };
+
+    window.addEventListener('wheel', handleScroll);
+
+    return () => {
+      window.removeEventListener('wheel', handleScroll);
+      clearTimeout(debounceTimeout.current); // Clean up on unmount
+    };
   }, [currentAssetIndex]);
 
   const handleModelSwitch = async () => {
@@ -46,7 +80,7 @@ function App() {
   const handleModelSwitchBackWard = async () => {
     setLoading(true)
     if (sceneRef.current) {
-      setCurrentAssetIndex((prevIndex) => (prevIndex - 1) % assetObject.length);
+      setCurrentAssetIndex((prevIndex) => prevIndex - 1 + assetObject.length) % assetObject.length;
       await sceneRef.current.switchModel(currentAssetIndex);
       setLoading(false);
     }

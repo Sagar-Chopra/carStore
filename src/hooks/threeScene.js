@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import gsap from 'gsap';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -9,6 +10,10 @@ export const initializeScene = (canvas, assetObject, initialAssetIndex) => {
     width: window.innerWidth,
     height: window.innerHeight,
   };
+
+  const tl = gsap.timeline({
+    defaults: {duration: 1}
+  })
 
   const renderer = new THREE.WebGLRenderer({ canvas });
   renderer.setSize(sizes.width, sizes.height);
@@ -76,6 +81,8 @@ export const initializeScene = (canvas, assetObject, initialAssetIndex) => {
           currentModel.position.sub(center.multiplyScalar(scale));
 
           scene.add(currentModel);
+
+          tl.fromTo(currentModel.scale, {z: 0, x: 0, y: 0}, {z: 0.3, x: 0.3, y: 0.3})
 
           camera.position.set(0, 0, 5);
           camera.lookAt(0, 0, 0);
@@ -150,6 +157,13 @@ export const initializeScene = (canvas, assetObject, initialAssetIndex) => {
   loadModel(assetObject[currentAssetIndex]).then(() => {
     animate(); // Start the animation loop after the initial model is loaded
   });
+
+  // gsap timeline
+
+
+
+
+  tl.fromTo(".title", {opacity: 0}, {opacity: 1})
 
   return {
     switchModel,
